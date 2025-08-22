@@ -1,0 +1,129 @@
+{
+    "server": {
+        "name": "Fortnite Private Server v1.8.0",
+        "description": "A Fortnite 1.8.0 battle royale server",
+        "version": "1.8.0",
+        "port": 7777,
+        "max_players": 100,
+        "password": "",
+        "public": true,
+        "region": "NA-EAST"
+    },
+    "gamemode": {
+        "type": "solo",
+        "max_players": 100,
+        "max_teams": 100,
+        "players_per_team": 1,
+        "building_enabled": true,
+        "storm_enabled": true,
+        "storm_phase_time": 300,
+        "weapon_drops_enabled": true,
+        "material_harvesting_enabled": true,
+        "fall_damage_enabled": true,
+        "friendly_fire": false
+    },
+    "storm": {
+        "enabled": true,
+        "phases": [
+            {
+                "duration": 240,
+                "damage_per_second": 1.0,
+                "shrink_time": 60,
+                "wait_time": 180
+            },
+            {
+                "duration": 180,
+                "damage_per_second": 2.0,
+                "shrink_time": 45,
+                "wait_time": 135
+            },
+            {
+                "duration": 120,
+                "damage_per_second": 5.0,
+                "shrink_time": 30,
+                "wait_time": 90
+            },
+            {
+                "duration": 90,
+                "damage_per_second": 8.0,
+                "shrink_time": 25,
+                "wait_time": 65
+            },
+            {
+                "duration": 60,
+                "damage_per_second": 10.0,
+                "shrink_time": 20,
+                "wait_time": 40
+            }
+        ]
+    },
+    "aircraft": {
+        "enabled": true,
+        "speed": 2000.0,
+        "height": 5000.0,
+        "jump_time": 60.0,
+        "horn_enabled": true
+    },
+    "loot": {
+        "spawn_enabled": true,
+        "chest_spawn_rate": 0.7,
+        "floor_loot_spawn_rate": 0.8,
+        "ammo_box_spawn_rate": 0.6,
+        "supply_drop_enabled": true,
+        "supply_drop_interval": 120
+    },
+    "building": {
+        "enabled": true,
+        "max_height": 7,
+        "turbo_building": true,
+        "edit_enabled": true,
+        "destruction_enabled": true,
+        "material_cap": {
+            "wood": 999,
+            "stone": 999,
+            "metal": 999
+        }
+    },
+    "weapons": {
+        "damage_multipliers": {
+            "headshot": 2.0,
+            "body": 1.0,
+            "limbs": 0.75
+        },
+        "bloom_enabled": true,
+        "first_shot_accuracy": true,
+        "reload_cancel": true
+    },
+    "network": {
+        "tick_rate": 60,
+        "max_ping": 350,
+        "timeout_duration": 30.0,
+        "compression_enabled": true,
+        "anti_cheat_enabled": true
+    },
+    "logging": {
+        "level": "info",
+        "log_to_file": true,
+        "log_file": "server.log",
+        "max_log_entries": 10000,
+        "categories": {
+            "general": true,
+            "network": true,
+            "game": true,
+            "player": true,
+            "debug": false
+        }
+    },
+    "console": {
+        "enabled": true,
+        "color_output": true,
+        "timestamp": true,
+        "auto_scroll": true
+    },
+    "performance": {
+        "max_fps": 120,
+        "garbage_collection_interval": 300.0,
+        "memory_limit_mb": 4096,
+        "cpu_limit_percent": 80.0
+    }
+}
