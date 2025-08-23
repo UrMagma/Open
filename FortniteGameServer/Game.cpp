@@ -22,6 +22,8 @@ namespace Game {
         }
     }
     
+    static void 
+
     void OnReadyToStartMatch() {
         LOG_INFO("Initializing match for the server!");
         

@@ -10,20 +10,24 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  
   <PropertyGroup Label="Globals">
-    <VCProjectVersion>16.0</VCProjectVersion>
+    <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{A1B2C3D4-E5F6-7890-1234-567890ABCDEF}</ProjectGuid>
+    <ProjectGuid>{F7B2A3E4-5C6D-4E8F-9A1B-2C3D4E5F6A7B}</ProjectGuid>
     <RootNamespace>FortniteGameServer</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
+  
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
+  
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
@@ -31,62 +35,80 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
+  
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
+  
   <ImportGroup Label="Shared">
   </ImportGroup>
+  
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  
   <PropertyGroup Label="UserMacros" />
+  
+  <!-- Debug Configuration -->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <TargetName>$(ProjectName)</TargetName>
+    <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)intermediate\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)bin\Intermediate\$(Configuration)\</IntDir>
+    <TargetName>FortniteGameServer</TargetName>
+    <TargetExt>.dll</TargetExt>
   </PropertyGroup>
+  
+  <!-- Release Configuration -->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <TargetName>$(ProjectName)</TargetName>
+    <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)intermediate\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)bin\Intermediate\$(Configuration)\</IntDir>
+    <TargetName>FortniteGameServer</TargetName>
+    <TargetExt>.dll</TargetExt>
   </PropertyGroup>
+  
+  <!-- Debug Compiler Settings -->
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;FORTNITEGS_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;FORTNITE_GAMESERVER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>../vendor;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>../vendor/MinHook;../vendor/spdlog;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>minhook.x64.lib;spdlogd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>echo DLL built successfully for Debug configuration</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
+  
+  <!-- Release Compiler Settings -->
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;FORTNITEGS_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;FORTNITE_GAMESERVER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>../vendor;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <Optimization>MaxSpeed</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -94,45 +116,59 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>../vendor/MinHook;../vendor/spdlog;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>minhook.x64.lib;spdlog.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>echo DLL built successfully for Release configuration</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
+  
+  <!-- Source Files -->
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="ObjectManager.cpp" />
+    <ClCompile Include="PlayerManager.cpp" />
+    <ClCompile Include="InventoryManager.cpp" />
+    <ClCompile Include="BuildingManager.cpp" />
+    <ClCompile Include="SafezoneManager.cpp" />
+    <ClCompile Include="MatchManager.cpp" />
+    <ClCompile Include="NetworkManager.cpp" />
+    <ClCompile Include="EventManager.cpp" />
     <ClCompile Include="UObject.cpp" />
-    <ClCompile Include="Engine.cpp" />
-    <ClCompile Include="PatternScanner.cpp" />
+    <ClCompile Include="Game.cpp" />
     <ClCompile Include="Native.cpp" />
     <ClCompile Include="Hooks.cpp" />
-    <ClCompile Include="Game.cpp" />
-    <ClCompile Include="GameModes\GameModeBase.cpp" />
-    <ClCompile Include="GameModes\GameModeSolos.cpp" />
-    <ClCompile Include="Logic\Inventory.cpp" />
-    <ClCompile Include="Logic\Abilities.cpp" />
-    <ClCompile Include="Logic\Teams.cpp" />
-    <ClCompile Include="FortniteClasses.cpp" />
+    <ClCompile Include="PatternScanner.cpp" />
+    <ClCompile Include="GameSystemTestSuite.cpp" />
+    <ClCompile Include="BasicFunctionalityTest.cpp" />
   </ItemGroup>
+  
+  <!-- Header Files -->
   <ItemGroup>
+    <ClInclude Include="BuildingManager.h" />
     <ClInclude Include="Definitions.h" />
-    <ClInclude Include="UObject.h" />
     <ClInclude Include="Engine.h" />
+    <ClInclude Include="EventManager.h" />
+    <ClInclude Include="FortniteClasses.h" />
+    <ClInclude Include="ForwardDeclarations.h" />
+    <ClInclude Include="Game.h" />
+    <ClInclude Include="GameSystemTestSuite.h" />
+    <ClInclude Include="Hooks.h" />
+    <ClInclude Include="InventoryManager.h" />
+    <ClInclude Include="Logger.h" />
+    <ClInclude Include="MatchManager.h" />
+    <ClInclude Include="Native.h" />
+    <ClInclude Include="NetworkManager.h" />
+    <ClInclude Include="ObjectManager.h" />
     <ClInclude Include="PatternScanner.h" />
     <ClInclude Include="Patterns.h" />
-    <ClInclude Include="Native.h" />
-    <ClInclude Include="Hooks.h" />
-    <ClInclude Include="Game.h" />
-    <ClInclude Include="GameModes\GameModes.h" />
-    <ClInclude Include="GameModes\GameModeBase.h" />
-    <ClInclude Include="GameModes\GameModeSolos.h" />
-    <ClInclude Include="Logic\Inventory.h" />
-    <ClInclude Include="Logic\Abilities.h" />
-    <ClInclude Include="Logic\Teams.h" />
-    <ClInclude Include="FortniteClasses.h" />
-    <ClInclude Include="Logger.h" />
-    <ClInclude Include="Utils.h" />
+    <ClInclude Include="PlayerManager.h" />
+    <ClInclude Include="SafezoneManager.h" />
+    <ClInclude Include="UObject.h" />
   </ItemGroup>
+  
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>

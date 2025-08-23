@@ -1,13 +1,30 @@
 #pragma once
 
-#include <Windows.h>
 #include <iostream>
 #include <string>
 #include <vector>
 #include <memory>
 #include <unordered_map>
 #include <functional>
-#include <format>
+#include <cstdint>
+#include <cstring>
+#include <chrono>
+#include <algorithm>
+#include <mutex>
+#include <atomic>
+
+// Cross-platform compatibility
+#ifdef _WIN32
+    #include <Windows.h>
+    #define PLATFORM_WINDOWS 1
+#elif defined(__APPLE__)
+    #include <dlfcn.h>
+    #include <mach-o/dyld.h>
+    #define PLATFORM_MAC 1
+#elif defined(__linux__)
+    #include <dlfcn.h>
+    #define PLATFORM_LINUX 1
+#endif
 
 // Forward declarations
 class UObject;
@@ -39,8 +56,32 @@ struct FName {
     
     FName() : ComparisonIndex(0), Number(0) {}
     FName(uint32_t Index) : ComparisonIndex(Index), Number(0) {}
+    FName(uint32_t Index, uint32_t Num) : ComparisonIndex(Index), Number(Num) {}
     
-    std::string ToString() const;
+    std::string ToString() const {
+        // Fallback implementation since FNameToString might not be available yet
+        if (ComparisonIndex == 0) {
+            return "None";
+        }
+        
+        std::string result = "Name_" + std::to_string(ComparisonIndex);
+        if (Number != 0) {
+            result += "_" + std::to_string(Number);
+        }
+        return result;
+    }
+    
+    bool IsValid() const {
+        return ComparisonIndex != 0;
+    }
+    
+    bool operator==(const FName& other) const {
+        return ComparisonIndex == other.ComparisonIndex && Number == other.Number;
+    }
+    
+    bool operator!=(const FName& other) const {
+        return !(*this == other);
+    }
 };
 
 struct FString {
@@ -49,11 +90,80 @@ struct FString {
     int32_t ArrayMax;
     
     FString() : Data(nullptr), ArrayNum(0), ArrayMax(0) {}
-    FString(const wchar_t* Str);
-    ~FString();
     
-    std::string ToString() const;
-    std::wstring ToWString() const;
+    FString(const wchar_t* Str) : Data(nullptr), ArrayNum(0), ArrayMax(0) {
+        if (Str) {
+            size_t len = wcslen(Str);
+            ArrayNum = static_cast<int32_t>(len);
+            ArrayMax = ArrayNum + 1;
+            Data = new wchar_t[ArrayMax];
+            wcscpy(Data, Str);
+        }
+    }
+    
+    FString(const std::string& str) : Data(nullptr), ArrayNum(0), ArrayMax(0) {
+        if (!str.empty()) {
+            ArrayNum = static_cast<int32_t>(str.length());
+            ArrayMax = ArrayNum + 1;
+            Data = new wchar_t[ArrayMax];
+            std::mbstowcs(Data, str.c_str(), ArrayMax);
+        }
+    }
+    
+    FString(const FString& other) : Data(nullptr), ArrayNum(0), ArrayMax(0) {
+        if (other.Data && other.ArrayNum > 0) {
+            ArrayNum = other.ArrayNum;
+            ArrayMax = other.ArrayMax;
+            Data = new wchar_t[ArrayMax];
+            wcscpy(Data, other.Data);
+        }
+    }
+    
+    FString& operator=(const FString& other) {
+        if (this != &other) {
+            delete[] Data;
+            Data = nullptr;
+            ArrayNum = ArrayMax = 0;
+            
+            if (other.Data && other.ArrayNum > 0) {
+                ArrayNum = other.ArrayNum;
+                ArrayMax = other.ArrayMax;
+                Data = new wchar_t[ArrayMax];
+                wcscpy(Data, other.Data);
+            }
+        }
+        return *this;
+    }
+    
+    ~FString() {
+        delete[] Data;
+        Data = nullptr;
+    }
+    
+    std::string ToString() const {
+        if (!Data || ArrayNum <= 0) return "";
+        
+        std::string result;
+        result.reserve(ArrayNum);
+        
+        for (int32_t i = 0; i < ArrayNum && Data[i]; ++i) {
+            if (Data[i] <= 127) { // ASCII range
+                result += static_cast<char>(Data[i]);
+            } else {
+                result += '?'; // Replace non-ASCII with ?
+            }
+        }
+        return result;
+    }
+    
+    std::wstring ToWString() const {
+        if (!Data || ArrayNum <= 0) return L"";
+        return std::wstring(Data, ArrayNum);
+    }
+    
+    bool IsEmpty() const {
+        return !Data || ArrayNum <= 0;
+    }
 };
 
 struct FVector {
@@ -124,13 +234,33 @@ struct TArray {
 
 // Function pointer types
 extern void* (*ProcessEvent)(UObject* Object, UFunction* Function, void* Params);
-extern void* (*FMemory_Malloc)(size_t Size, uint32_t Alignment = 0);
-extern void* (*FMemory_Realloc)(void* Ptr, size_t NewSize, uint32_t Alignment = 0);
+extern void* (*FMemory_Malloc)(size_t Size, uint32_t Alignment);
+extern void* (*FMemory_Realloc)(void* Ptr, size_t NewSize, uint32_t Alignment);
 extern void (*FMemory_Free)(void* Ptr);
 extern void (*FNameToString)(FName* Name, FString* OutString);
 
 // Global engine pointers
 extern uintptr_t Imagebase;
+
+// Helper function for FName to string conversion
+inline std::string FNameToString_Safe(const FName& Name) {
+    if (FNameToString) {
+        FString OutString;
+        FNameToString(const_cast<FName*>(&Name), &OutString);
+        return OutString.ToString();
+    }
+    
+    // Fallback implementation
+    if (Name.ComparisonIndex == 0) {
+        return "None";
+    }
+    
+    std::string result = "Name_" + std::to_string(Name.ComparisonIndex);
+    if (Name.Number != 0) {
+        result += "_" + std::to_string(Name.Number);
+    }
+    return result;
+}
 
 // Enums
 enum class ENetRole : uint8_t {
@@ -181,10 +311,26 @@ enum class EObjectFlags : uint32_t {
     RF_WillBeLoaded = 0x08000000
 };
 
-// Macros
-#define LOG_INFO(msg) std::wcout << L"[INFO] " << msg << std::endl
-#define LOG_WARN(msg) std::wcout << L"[WARN] " << msg << std::endl
-#define LOG_ERROR(msg) std::wcout << L"[ERROR] " << msg << std::endl
+// Cross-platform logging macros
+#ifdef _WIN32
+    #define LOG_INFO(msg) std::wcout << L"[INFO] " << msg << std::endl
+    #define LOG_WARN(msg) std::wcout << L"[WARN] " << msg << std::endl
+    #define LOG_ERROR(msg) std::wcout << L"[ERROR] " << msg << std::endl
+#else
+    #define LOG_INFO(msg) std::cout << "[INFO] " << msg << std::endl
+    #define LOG_WARN(msg) std::cout << "[WARN] " << msg << std::endl
+    #define LOG_ERROR(msg) std::cout << "[ERROR] " << msg << std::endl
+#endif
+
+// String formatting utility (cross-platform)
+template<typename... Args>
+std::string FormatString(const std::string& format, Args... args) {
+    size_t size = snprintf(nullptr, 0, format.c_str(), args...) + 1;
+    if (size <= 0) return "";
+    std::unique_ptr<char[]> buf(new char[size]);
+    snprintf(buf.get(), size, format.c_str(), args...);
+    return std::string(buf.get(), buf.get() + size - 1);
+}
 
 #define DECLARE_FUNCTION(func) \
     extern decltype(func) func##Original; \
@@ -204,3 +350,36 @@ inline void Write(void* Address, T Value) {
 inline void* OffsetPointer(void* Base, ptrdiff_t Offset) {
     return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(Base) + Offset);
 }
+
+// Basic Fortnite class implementations for compilation
+class AFortPlayerControllerAthena {
+public:
+    void* Character = nullptr;
+    FString PlayerName;
+    
+    AFortPlayerControllerAthena() : Character(nullptr) {
+        PlayerName = FString("Player");
+    }
+    
+    std::string GetName() const {
+        return PlayerName.ToString();
+    }
+    
+    void SetName(const std::string& Name) {
+        PlayerName = FString(Name);
+    }
+};
+
+class AFortPlayerPawnAthena {
+public:
+    FVector Location;
+    FRotator Rotation;
+    
+    AFortPlayerPawnAthena() : Location(), Rotation() {}
+    
+    FVector GetActorLocation() const { return Location; }
+    void SetActorLocation(const FVector& NewLocation) { Location = NewLocation; }
+    
+    FRotator GetActorRotation() const { return Rotation; }
+    void SetActorRotation(const FRotator& NewRotation) { Rotation = NewRotation; }
+};

@@ -189,15 +189,27 @@ public:
 // Template implementations
 template<typename T>
 T* UObject::FindObject(const std::wstring& Name) {
-    if (!GObjects) return nullptr;
+    if (!GObjects) {
+        return nullptr;
+    }
+    
+    std::string SearchName(Name.begin(), Name.end());
     
     for (int32_t i = 0; i < GObjects->Num(); ++i) {
         UObject* Object = GObjects->GetByIndex(i);
         if (!Object || !Object->IsValidLowLevel()) continue;
         
-        if (Object->GetFullName().find(std::string(Name.begin(), Name.end())) != std::string::npos) {
-            if (Object->IsA<T>()) {
-                return static_cast<T*>(Object);
+        std::string ObjectName = Object->GetName();
+        std::string FullName = Object->GetFullName();
+        
+        // Check both object name and full name
+        if (ObjectName.find(SearchName) != std::string::npos ||
+            FullName.find(SearchName) != std::string::npos) {
+            
+            // Try to cast to the requested type
+            T* CastedObject = Object->Cast<T>();
+            if (CastedObject) {
+                return CastedObject;
             }
         }
     }
@@ -206,6 +218,61 @@ T* UObject::FindObject(const std::wstring& Name) {
 
 template<typename T>
 T* UObject::FindObject(const std::string& Name) {
-    std::wstring WideName(Name.begin(), Name.end());
-    return FindObject<T>(WideName);
+    if (!GObjects) {
+        return nullptr;
+    }
+    
+    for (int32_t i = 0; i < GObjects->Num(); ++i) {
+        UObject* Object = GObjects->GetByIndex(i);
+        if (!Object || !Object->IsValidLowLevel()) continue;
+        
+        std::string ObjectName = Object->GetName();
+        std::string FullName = Object->GetFullName();
+        
+        // Check both object name and full name  
+        if (ObjectName.find(Name) != std::string::npos ||
+            FullName.find(Name) != std::string::npos) {
+            
+            // Try to cast to the requested type
+            T* CastedObject = Object->Cast<T>();
+            if (CastedObject) {
+                return CastedObject;
+            }
+        }
+    }
+    return nullptr;
+}
+
+template<typename T>
+T* UObject::LoadObject(const std::wstring& Name) {
+    // For now, LoadObject is the same as FindObject
+    // In a full implementation, this would load from disk if not found
+    return FindObject<T>(Name);
+}
+
+// Property access template implementations
+template<typename T>
+T* UObject::GetProperty(const std::string& PropertyName) {
+    ptrdiff_t Offset = GetOffset(PropertyName);
+    if (Offset == -1) {
+        return nullptr;
+    }
+    return GetPtr<T>(Offset);
+}
+
+template<typename T>
+T UObject::GetPropertyValue(const std::string& PropertyName) {
+    T* PropertyPtr = GetProperty<T>(PropertyName);
+    if (PropertyPtr) {
+        return *PropertyPtr;
+    }
+    return T{}; // Return default value if property not found
+}
+
+template<typename T>
+void UObject::SetPropertyValue(const std::string& PropertyName, const T& Value) {
+    T* PropertyPtr = GetProperty<T>(PropertyName);
+    if (PropertyPtr) {
+        *PropertyPtr = Value;
+    }
 }
